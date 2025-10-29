@@ -1,0 +1,89 @@
+Aeron
+201
+50 80
+PackageDelivery 10 20
+ExpressDrop 15 25
+ParcelDispatch 5 30
+SupplyDrop 20 35
+CargoTransfer 12 18
+
+Brandon
+102
+12 26
+MedicalKitDelivery 30 10
+FoodPackage 20 40
+EmergencyShipment 25 15
+SparePartsDelivery 18 22
+DocumentCourier 12 30
+
+Charlie
+123
+18 42
+ExpressDrop 22 48
+PackageDelivery 10 32
+FoodPackage 8 45
+DocumentCourier 20 38
+SparePartsDelivery 12 50
+
+Chris
+128
+25 35
+ParcelDispatch 18 30
+SupplyDrop 28 40
+MedicalKitDelivery 25 25
+EmergencyShipment 20 20
+CargoTransfer 30 35
+
+Echo
+105
+5 5
+FoodPackage 8 12
+DocumentCourier 10 15
+SparePartsDelivery 15 8
+MedicalKitDelivery 20 10
+ExpressDrop 12 18
+
+Alpha
+131
+60 75
+CargoTransfer 55 60
+PackageDelivery 45 50
+SupplyDrop 70 80
+EmergencyShipment 65 70
+DocumentCourier 50 65
+
+Zed
+87
+18 33
+ExpressDrop 22 38
+PackageDelivery 10 15
+MedicalKitDelivery 8 25
+DocumentCourier 12 30
+SparePartsDelivery 20 28
+
+Bernie
+380
+12 14
+FoodPackage 15 18
+PackageDelivery 10 20
+SparePartsDelivery 8 12
+CargoTransfer 18 22
+SupplyDrop 20 16
+
+Ivy
+109
+45 45
+ExpressDrop 42 50
+Delivery 48 40
+ParcelDispatch 50 55
+MedicalKitDelivery 52 47
+EmergencyShipment 40 43
+
+Juliet
+110
+25 55
+SparePartsDelivery 30 60
+FoodPackage 28 48
+PackageDelivery 20 50
+CargoTransfer 35 55
+DocumentCourier 22 45
