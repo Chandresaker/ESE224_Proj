@@ -151,8 +151,7 @@ void Drone::operator<<(const Drone& d2) {
 void Drone::operator-(Drone& d2) {
     for (int i = 0; i < 5; ++i) {
         std::swap(this->tasks[i], d2.tasks[i]);
-        std::swap(this->task_positions[i][0], d2.task_positions[i][0]);
-        std::swap(this->task_positions[i][1], d2.task_positions[i][1]);
+        std::swap(this->task_positions[i], d2.task_positions[i]);
     }
 }
 

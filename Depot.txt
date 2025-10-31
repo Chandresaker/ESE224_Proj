@@ -1,5 +1,21 @@
 Drone: Zed (ID=87, Position=(18, 33))
 Tasks:
+1. ExpressDrop at (42,50)
+2. Delivery at (48,40)
+3. ParcelDispatch at (50,55)
+4. MedicalKitDelivery at (52,47)
+5. EmergencyShipment at (40,43)
+[Greedy Route - closed]
+Sequence (starting at (18,33)):
+(18,33) -> (40,43) -> (42,50) -> (50,55) -> (52,47) -> (48,40) -> (18,33)
+Total distance (greedy): 87.99
+[Global Optimal Route - closed]
+Sequence (starting at (18,33)):
+(18,33) -> (42,50) -> (50,55) -> (52,47) -> (48,40) -> (40,43) -> (18,33)
+Total distance (optimal): 87.86
+
+Drone: Zed (ID=87, Position=(18, 33))
+Tasks:
 1. ExpressDrop at (22,38)
 2. PackageDelivery at (10,15)
 3. MedicalKitDelivery at (8,25)
@@ -48,19 +64,19 @@ Total distance (optimal): 41.97
 
 Drone: Ivy (ID=109, Position=(45, 45))
 Tasks:
-1. ExpressDrop at (42,50)
-2. Delivery at (48,40)
-3. ParcelDispatch at (50,55)
-4. MedicalKitDelivery at (52,47)
-5. EmergencyShipment at (40,43)
+1. ExpressDrop at (22,38)
+2. PackageDelivery at (10,15)
+3. MedicalKitDelivery at (8,25)
+4. DocumentCourier at (12,30)
+5. SparePartsDelivery at (20,28)
 [Greedy Route - closed]
 Sequence (starting at (45,45)):
-(45,45) -> (40,43) -> (42,50) -> (50,55) -> (52,47) -> (48,40) -> (45,45)
-Total distance (greedy): 44.24
+(45,45) -> (22,38) -> (20,28) -> (12,30) -> (8,25) -> (10,15) -> (45,45)
+Total distance (greedy): 105.18
 [Global Optimal Route - closed]
 Sequence (starting at (45,45)):
-(45,45) -> (48,40) -> (52,47) -> (50,55) -> (42,50) -> (40,43) -> (45,45)
-Total distance (optimal): 44.24
+(45,45) -> (22,38) -> (12,30) -> (8,25) -> (10,15) -> (20,28) -> (45,45)
+Total distance (optimal): 100.08
 
 Drone: Juliet (ID=110, Position=(25, 55))
 Tasks:
@@ -141,20 +157,4 @@ Total distance (greedy): 156.32
 Sequence (starting at (50,80)):
 (50,80) -> (5,30) -> (10,20) -> (12,18) -> (15,25) -> (20,35) -> (50,80)
 Total distance (optimal): 154.16
-
-Drone: Bernie (ID=380, Position=(12, 14))
-Tasks:
-1. FoodPackage at (15,18)
-2. PackageDelivery at (10,20)
-3. SparePartsDelivery at (8,12)
-4. CargoTransfer at (18,22)
-5. SupplyDrop at (20,16)
-[Greedy Route - closed]
-Sequence (starting at (12,14)):
-(12,14) -> (8,12) -> (10,20) -> (15,18) -> (18,22) -> (20,16) -> (12,14)
-Total distance (greedy): 37.67
-[Global Optimal Route - closed]
-Sequence (starting at (12,14)):
-(12,14) -> (8,12) -> (10,20) -> (15,18) -> (18,22) -> (20,16) -> (12,14)
-Total distance (optimal): 37.67
 

@@ -1,11 +1,8 @@
 #include "Depot.h"
 #include "Drone.h"
-#include "Depot.cpp"
-#include "Drone.cpp"
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <limits>
 using namespace std;
 
 void loadDronesFromFile(Depot& depot, const string& filename) {
@@ -63,14 +60,12 @@ void displayMenu() {
     cout << "14. SortDroneDataAscending\n";
     cout << "15. SortDroneDataDescending\n";
     cout << "16. Quit\n";
+    cout << "17. Local Optimum Route (Greedy)\n";
+    cout << "18. Global Optimum Route (Exact)\n";
     cout << "==============================\n";
     cout << "Select an option: ";
 }
-void pause_console() {
-
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    cin.get();
-}
+// Removed pause_console per user request: no console pauses between menu actions
 
 int main() {
     Depot depot;
@@ -89,19 +84,19 @@ int main() {
         case 1:
             depot.sortByName();
             cout << "Sorted by name.\n";
-            cout<<"click any key to continue with menu"<<endl; pause_console(); break;
+            break;
         case 2:
             depot.sortByID();
             cout << "Sorted by ID.\n";
-            cout<<"click any key to continue with menu"<<endl; pause_console(); break;
+            break;
         case 3:
             depot.sortByPosition();
             cout << "Sorted by distance from origin.\n";
-            cout<<"click any key to continue with menu"<<endl; pause_console(); break;
+            break;
         case 4:
             depot.randomizeOrder();
             cout << "Order randomized.\n";
-            cout<<"click any key to continue with menu"<<endl; pause_console(); break;
+            break;
         case 5: {
             Drone d;
             string name;
@@ -118,7 +113,7 @@ int main() {
             d.setInitPosition(1, y);
             depot.addDrone(d);
             cout << "Drone added.\n";
-            cout<<"click any key to continue with menu"<<endl; pause_console(); break;
+            break;
         }
         case 6: {
             int idx;
@@ -128,7 +123,7 @@ int main() {
                 depot.getDrone(idx).displayDrone();
             else
                 cout << "Invalid index.\n";
-            cout<<"click any key to continue with menu"<<endl; pause_console(); break;
+            break;
         }
         case 7: {
             string name;
@@ -139,7 +134,7 @@ int main() {
                 depot.getDrone(idx).displayDrone();
             else
                 cout << "Drone not found.\n";
-            cout<<"click any key to continue with menu"<<endl; pause_console(); break;
+            break;
         }
         case 8: {
             int id;
@@ -150,19 +145,24 @@ int main() {
                 depot.getDrone(idx).displayDrone();
             else
                 cout << "Drone not found.\n";
-            cout<<"click any key to continue with menu"<<endl; pause_console(); break;
+            break;
         }
         case 9:
             depot.writeDepotToFile();
             cout << "Depot written to file.\n";
-            cout<<"click any key to continue with menu"<<endl; pause_console(); break;
+            break;
         case 10: {
             int a, b;
-            cout << "Enter two indices to swap: ";
+            cout << "Enter two indices to swap tasks between: ";
             cin >> a >> b;
-            depot.swapDroneData(a, b);
-            cout << "Drone data swapped.\n";
-            cout<<"click any key to continue with menu"<<endl; pause_console(); break;
+            if (a < 0 || b < 0 || a >= depot.getNumDrones() || b >= depot.getNumDrones()) {
+                cout << "Invalid indices.\n";
+            } else if (a == b) {
+                cout << "Indices are the same; nothing to swap.\n";
+            } else {
+                depot.swapDroneData(a, b);
+            }
+            break;
         }
         case 11: {
             int droneIdx, taskIdx, tx, ty;
@@ -176,7 +176,7 @@ int main() {
             int pos[2] = { tx, ty };
             depot.insertDroneTask(droneIdx, taskIdx, task, pos);
             cout << "Task inserted.\n";
-            cout<<"click any key to continue with menu"<<endl; pause_console(); break;
+            break;
         }
         case 12: {
             int src, dest;
@@ -184,18 +184,18 @@ int main() {
             cin >> src >> dest;
             depot.copyDrone(src, dest);
             cout << "Drone copied.\n";
-            cout<<"click any key to continue with menu"<<endl; pause_console(); break;
+            break;
         }
         case 13:
             depot.printAllNames();
-            cout<<"click any key to continue with menu"<<endl; pause_console(); break;
+            break;
         case 14: {
             int idx;
             cout << "Enter drone index: ";
             cin >> idx;
             depot.sortDroneDataAscending(idx);
             cout << "Drone tasks sorted ascending.\n";
-            cout<<"click any key to continue with menu"<<endl; pause_console(); break;
+            break;
         }
         case 15: {
             int idx;
@@ -203,14 +203,38 @@ int main() {
             cin >> idx;
             depot.sortDroneDataDescending(idx);
             cout << "Drone tasks sorted descending.\n";
-            cout<<"click any key to continue with menu"<<endl; pause_console(); break;
+            break;
         }
         case 16:
             cout << "Exiting program.\n";
-            cout<<"click any key to continue with menu"<<endl; pause_console(); break;
+            break;
+        case 17: {
+            if (depot.getNumDrones() == 0) { cout << "No drones loaded.\n"; break; }
+            int idx;
+            cout << "Enter drone index for Local (Greedy) route: ";
+            cin >> idx;
+            if (idx >= 0 && idx < depot.getNumDrones()) {
+                depot.computeGreedyRoute(idx, cout);
+            } else {
+                cout << "Invalid index.\n";
+            }
+            break;
+        }
+        case 18: {
+            if (depot.getNumDrones() == 0) { cout << "No drones loaded.\n"; break; }
+            int idx;
+            cout << "Enter drone index for Global Optimal route: ";
+            cin >> idx;
+            if (idx >= 0 && idx < depot.getNumDrones()) {
+                depot.computeOptimalRoute(idx, cout);
+            } else {
+                cout << "Invalid index.\n";
+            }
+            break;
+        }
         default:
             cout << "Invalid choice.\n";
-            cout<<"click any key to continue with menu"<<endl; pause_console(); break;
+            break;
         }
     } while (choice != 16);
 

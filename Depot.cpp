@@ -127,10 +127,21 @@ int Depot::searchDroneByID(int id) {
 
 // --- Drone Interaction Method Implementations ---
 
-// Swaps task data between two drones
+// Swaps task data (tasks + task positions) between two drones
 void Depot::swapDroneData(int index1, int index2) {
-    // Use the overloaded operator-
+    int n = static_cast<int>(drones.size());
+    if (index1 < 0 || index1 >= n || index2 < 0 || index2 >= n) {
+        cout << "Error: Invalid indices for swap." << endl;
+        return;
+    }
+    if (index1 == index2) {
+        cout << "Swap skipped: indices are the same." << endl;
+        return;
+    }
+    // Use the overloaded operator- to swap only tasks and their positions
+    Drone t = drones[index1];
     drones[index1] - drones[index2];
+    cout << "Swapped task data between drones " << index1 << " and " << index2 << "." << endl;
 }
 
 // Copies drone data from index1 to index2
