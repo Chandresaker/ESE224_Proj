@@ -1,3 +1,12 @@
+/*
+ * Project: ESE224_Proj — Drone Depot
+ * File: Depot.h
+ * Purpose:
+ *   Declares the Depot class: manages a collection of Drone objects, including
+ *   sorting/search, swapping task data between drones, task edits, shuffling,
+ *   printing, persistence to Depot.txt, and route computations (greedy/global).
+ */
+
 #ifndef DEPOT_H
 #define DEPOT_H
 

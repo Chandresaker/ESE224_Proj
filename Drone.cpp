@@ -1,3 +1,17 @@
+/*
+ * Project: ESE224_Proj — Drone Depot
+ * Authors: Andy, Patrick, Kaicheng
+ * File: Drone.cpp
+ * Purpose:
+ *   Implements the Drone class: identity (name, ID), initial position,
+ *   five tasks with positions, task sorting, display, and operator overloads
+ *   used to copy and swap task data.
+ *
+ * Notes:
+ *   - operator<< copies all attributes from another Drone.
+ *   - operator- swaps ONLY tasks and task positions with another Drone.
+ */
+
 #include "Drone.h"
 #include <iostream>
 #include <string>

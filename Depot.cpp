@@ -1,3 +1,18 @@
+/*
+ * Project: ESE224_Proj — Drone Depot
+ * Authors: Andy, Patrick, Kaicheng
+ * File: Depot.cpp
+ * Purpose:
+ *   Implements the Depot class: manages a collection of Drone objects
+ *   (add/retrieve/count), sorting and searching, swapping task data,
+ *   randomization, printing, file output, and route computations
+ *   (greedy/local and global optimal).
+ *
+ * Notes:
+ *   - swapDroneData(i, j) swaps ONLY task names and task positions between drones.
+ *   - writeDepotToFile() outputs drone info, tasks, and both route variants to Depot.txt.
+ */
+
 #include "Depot.h"
 #include <iostream>
 #include <fstream>

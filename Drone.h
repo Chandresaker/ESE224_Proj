@@ -1,3 +1,12 @@
+/*
+ * Project: ESE224_Proj — Drone Depot
+ * File: Drone.h
+ * Purpose:
+ *   Declares the Drone class: identity (name, ID), initial position, five tasks
+ *   with positions, sorting operations, display, and operator overloads used by
+ *   the Depot. Designed for simple, fixed-size storage (5 tasks per drone).
+ */
+
 #ifndef DRONE_H
 #define DRONE_H
 

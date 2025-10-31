@@ -1,3 +1,20 @@
+/*
+ * Project: ESE224_Proj — Drone Depot
+ * Authors: Andy, Patrick, Kaicheng
+ * File: main.cpp
+ * Purpose:
+ *   Console program to manage a small fleet of drones and their tasks:
+ *   - Load drones from DroneInput.txt
+ *   - Sort/search/view drones
+ *   - Edit tasks (insert, copy, swap task data only)
+ *   - Print Local (greedy) and Global (optimal) closed routes
+ *
+ * Notes:
+ *   - Option 10 swaps ONLY task names and task positions between two drones.
+ *   - Options 17 (Local/Greedy) and 18 (Global/Optimal) print a route for a chosen drone.
+ *   - No console pauses; actions return directly to the menu.
+ */
+
 #include "Depot.h"
 #include "Drone.h"
 #include <iostream>
@@ -5,6 +22,14 @@
 #include <string>
 using namespace std;
 
+// Loads up to 10 drones (each with 5 tasks) from the given text file.
+// Expected format per drone:
+//   name id initX initY
+//   task1 x1 y1
+//   task2 x2 y2
+//   task3 x3 y3
+//   task4 x4 y4
+//   task5 x5 y5
 void loadDronesFromFile(Depot& depot, const string& filename) {
     ifstream infile(filename);
     if (!infile.is_open()) {
@@ -18,30 +43,31 @@ void loadDronesFromFile(Depot& depot, const string& filename) {
         int id;
         int x, y;
 
-        infile >> name;
-        if (name.empty()) break;
-        infile >> id;
-        infile >> x >> y;
+    infile >> name;             // read drone name
+    if (name.empty()) break;    // stop early if no more records
+    infile >> id;               // read drone ID
+    infile >> x >> y;           // read initial position (x,y)
 
-        d.setName(name);
-        d.setID(id);
-        d.setInitPosition(0, x);
-        d.setInitPosition(1, y);
+    d.setName(name);            // set identity
+    d.setID(id);
+    d.setInitPosition(0, x);    // set initial X
+    d.setInitPosition(1, y);    // set initial Y
 
         for (int j = 0; j < 5; j++) {
             string task;
             int tx, ty;
-            infile >> task >> tx >> ty;
+            infile >> task >> tx >> ty;   // read one task and its (x,y)
             d.setTask(j, task);
             d.setTaskPosition(j, 0, tx);
             d.setTaskPosition(j, 1, ty);
         }
 
-        depot.addDrone(d);
+    depot.addDrone(d);                 // append to depot
     }
     infile.close();
 }
 
+// Prints the interactive menu of available actions (options 1–18).
 void displayMenu() {
     cout << "\n===== DRONE CONTROL MENU =====\n";
     cout << "1. Sort Drones By Name\n";
@@ -65,7 +91,6 @@ void displayMenu() {
     cout << "==============================\n";
     cout << "Select an option: ";
 }
-// Removed pause_console per user request: no console pauses between menu actions
 
 int main() {
     Depot depot;
@@ -75,26 +100,34 @@ int main() {
     
     int choice;
     do {
-        displayMenu();
-        cin >> choice;
+    displayMenu();          // show menu
+    cin >> choice;          // read user selection
         cout << endl;
 
+        /*
+        * Menu quick reference:
+        *  1) Sort by Name   2) Sort by ID   3) Sort by Position   4) Randomize
+        *  5) Add Drone      6) Show Drone   7) Search by Name     8) Search by ID
+        *  9) Write File    10) Swap Tasks  11) Insert Task       12) Copy Drone
+        * 13) List Names    14) Sort Tasks ↑ 15) Sort Tasks ↓     16) Quit
+        * 17) Local Route (Greedy)          18) Global Route (Optimal)
+        */
         
         switch (choice) {
         case 1:
-            depot.sortByName();
+            depot.sortByName();                 // sort fleet by name (asc)
             cout << "Sorted by name.\n";
             break;
         case 2:
-            depot.sortByID();
+            depot.sortByID();                   // sort fleet by ID (asc)
             cout << "Sorted by ID.\n";
             break;
         case 3:
-            depot.sortByPosition();
+            depot.sortByPosition();             // sort by distance from origin (asc)
             cout << "Sorted by distance from origin.\n";
             break;
         case 4:
-            depot.randomizeOrder();
+            depot.randomizeOrder();             // shuffle fleet order
             cout << "Order randomized.\n";
             break;
         case 5: {
@@ -111,7 +144,7 @@ int main() {
             d.setID(id);
             d.setInitPosition(0, x);
             d.setInitPosition(1, y);
-            depot.addDrone(d);
+            depot.addDrone(d);                  // add new drone to fleet
             cout << "Drone added.\n";
             break;
         }
@@ -120,7 +153,7 @@ int main() {
             cout << "Enter drone index: ";
             cin >> idx;
             if (idx >= 0 && idx < depot.getNumDrones())
-                depot.getDrone(idx).displayDrone();
+                depot.getDrone(idx).displayDrone();   // show all attributes
             else
                 cout << "Invalid index.\n";
             break;
@@ -129,7 +162,7 @@ int main() {
             string name;
             cout << "Enter name to search: ";
             cin >> name;
-            int idx = depot.searchDroneByName(name);
+            int idx = depot.searchDroneByName(name);   // binary search by name
             if (idx != -1)
                 depot.getDrone(idx).displayDrone();
             else
@@ -140,7 +173,7 @@ int main() {
             int id;
             cout << "Enter ID to search: ";
             cin >> id;
-            int idx = depot.searchDroneByID(id);
+            int idx = depot.searchDroneByID(id);       // binary search by ID
             if (idx != -1)
                 depot.getDrone(idx).displayDrone();
             else
@@ -148,19 +181,19 @@ int main() {
             break;
         }
         case 9:
-            depot.writeDepotToFile();
+            depot.writeDepotToFile();           // save snapshot to Depot.txt
             cout << "Depot written to file.\n";
             break;
         case 10: {
             int a, b;
             cout << "Enter two indices to swap tasks between: ";
             cin >> a >> b;
-            if (a < 0 || b < 0 || a >= depot.getNumDrones() || b >= depot.getNumDrones()) {
+            if (a < 0 || b < 0 || a >= depot.getNumDrones() || b >= depot.getNumDrones()) { // bounds check
                 cout << "Invalid indices.\n";
-            } else if (a == b) {
+            } else if (a == b) {                // no-op if same index
                 cout << "Indices are the same; nothing to swap.\n";
             } else {
-                depot.swapDroneData(a, b);
+                depot.swapDroneData(a, b);      // swap ONLY task names/positions
             }
             break;
         }
@@ -173,8 +206,8 @@ int main() {
             cin >> taskIdx;
             cout << "Enter task name and position (x y): ";
             cin >> task >> tx >> ty;
-            int pos[2] = { tx, ty };
-            depot.insertDroneTask(droneIdx, taskIdx, task, pos);
+            int pos[2] = { tx, ty };            // pack (x,y) into array
+            depot.insertDroneTask(droneIdx, taskIdx, task, pos); // insert/overwrite task
             cout << "Task inserted.\n";
             break;
         }
@@ -182,18 +215,18 @@ int main() {
             int src, dest;
             cout << "Enter source and destination indices: ";
             cin >> src >> dest;
-            depot.copyDrone(src, dest);
+            depot.copyDrone(src, dest);         // deep copy src -> dest
             cout << "Drone copied.\n";
             break;
         }
         case 13:
-            depot.printAllNames();
+            depot.printAllNames();              // list indices and names
             break;
         case 14: {
             int idx;
             cout << "Enter drone index: ";
             cin >> idx;
-            depot.sortDroneDataAscending(idx);
+            depot.sortDroneDataAscending(idx);  // sort one drone's tasks A->Z
             cout << "Drone tasks sorted ascending.\n";
             break;
         }
@@ -201,7 +234,7 @@ int main() {
             int idx;
             cout << "Enter drone index: ";
             cin >> idx;
-            depot.sortDroneDataDescending(idx);
+            depot.sortDroneDataDescending(idx); // sort one drone's tasks Z->A
             cout << "Drone tasks sorted descending.\n";
             break;
         }
@@ -214,7 +247,7 @@ int main() {
             cout << "Enter drone index for Local (Greedy) route: ";
             cin >> idx;
             if (idx >= 0 && idx < depot.getNumDrones()) {
-                depot.computeGreedyRoute(idx, cout);
+                depot.computeGreedyRoute(idx, cout);  // nearest-next closed tour
             } else {
                 cout << "Invalid index.\n";
             }
@@ -226,7 +259,7 @@ int main() {
             cout << "Enter drone index for Global Optimal route: ";
             cin >> idx;
             if (idx >= 0 && idx < depot.getNumDrones()) {
-                depot.computeOptimalRoute(idx, cout);
+                depot.computeOptimalRoute(idx, cout); // brute-force closed tour
             } else {
                 cout << "Invalid index.\n";
             }
