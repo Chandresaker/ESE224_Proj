@@ -17,3 +17,6 @@ Final Project Due Tmr 12/7:
 
     -For submition can comment out the edge function
     -Need report
+
+    Update:
+        -Cases done. Waiting for report
