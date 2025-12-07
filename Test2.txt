@@ -1,0 +1,40 @@
+Select an option: 2
+
+Sorted by ID.
+
+===== DRONE CONTROL MENU =====
+1. Sort Drones By Name
+2. Sort Drones By ID
+3. Sort Drones By Position
+4. Randomize Drone Order
+5. Add a Drone
+6. Retrieve a Drone
+7. Search Drone By Name
+8. Search Drone By ID
+9. Write Depot to File
+10. Swap Drone Data
+11. Insert Drone Task
+12. Copy-Paste Drone
+13. Display All Drones names
+14. SortDroneDataAscending
+15. SortDroneDataDescending
+16. Quit
+17. Local Optimum Route (Greedy)
+18. Global Optimum Route (Exact)
+19. Test Advanced/Tree/Manager
+20. Dynamic Insertion Demo
+==============================
+Select an option: 13
+
+--- Drone Roster ---
+0: Swift
+1: Hawk
+2: Drone4
+3: Eagle
+4: Falcon
+5: Drone7
+6: Viper
+7: Raven
+8: Drone9
+9: Condor
+--------------------

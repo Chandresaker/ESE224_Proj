@@ -463,66 +463,92 @@ void Depot::processDynamicTask(const string& taskName, int x, int y,
                               double& totalFleetDistance) {
     if (drones.empty()) return;
 
+    // Ensure state vector is sized correctly
     if (dynamicStates.size() != drones.size()) {
-        dynamicStates.clear();
         dynamicStates.resize(drones.size());
     }
 
     int newPos[2] = {x, y};
-
     cout << "New task: " << taskName << " (x=" << x << ", y=" << y << ")" << endl;
-    // Track fleet distance before processing this task to report net change
-    double beforeTotal = totalFleetDistance;
 
+    int bestDroneIdx = -1;
+    double bestNetChange = std::numeric_limits<double>::max();
+    bool isReplacement = false;
+    double winningNewDelta = 0.0; // Store the calculated delta for the winner
+
+    // PHASE 1: EVALUATE CANDIDATES
     for (size_t i = 0; i < drones.size(); ++i) {
         Drone& d = drones[i];
         DynamicTaskState& state = dynamicStates[i];
 
+        // Calculate cost to insert this NEW task
         double deltaNew = computeInsertionDeltaForDrone(d, newPos);
+        double netChange = 0.0;
 
         if (!state.hasTask) {
-            // Simple insertion: this drone had no dynamic task yet.
-            state.hasTask = true;
-            state.name = taskName;
-            state.pos[0] = x;
-            state.pos[1] = y;
-            state.delta = deltaNew;
+            // SCENARIO 1: Drone has no dynamic task. Cost is just the insertion delta.
+            netChange = deltaNew;
+            
+            // Log for debugging (optional)
+            // cout << "Drone#" << i << ": Insert Delta=" << deltaNew << endl;
 
-            totalFleetDistance += deltaNew;
-
-            cout << "Drone#" << i << ": Insert =" << deltaNew << endl;
+            if (netChange < bestNetChange) {
+                bestNetChange = netChange;
+                bestDroneIdx = i;
+                winningNewDelta = deltaNew;
+                isReplacement = false;
+            }
         } else {
-            // Decide whether to replace existing dynamic task
+            // SCENARIO 2: Drone already has a dynamic task. Check replacement.
             double deltaOld = state.delta;
+            
+            // We only consider replacing if it improves cost significantly
             if (deltaNew < deltaOld - replacementThreshold) {
-                cout << "Drone#" << i << ": Replace old task " << state.name
-                     << " (old=" << deltaOld
-                     << " new=" << deltaNew << ")" << endl;
+                // Net change = New Cost - Old Cost (should be negative for improvement)
+                netChange = deltaNew - deltaOld;
 
-                // Update total fleet distance: remove old delta, add new
-                totalFleetDistance -= deltaOld;
-                totalFleetDistance += deltaNew;
+                // cout << "Drone#" << i << ": Replace Delta=" << netChange << endl;
 
-                // Update to the newly chosen task
-                state.name = taskName;
-                state.pos[0] = x;
-                state.pos[1] = y;
-                state.delta = deltaNew;
-
-                cout << "=> Drone#" << i << " now tracks task " << taskName << endl;
-            } else {
-                cout << "Drone#" << i << ": Keep existing task " << state.name
-                     << " (old=" << deltaOld
-                     << ", new=" << deltaNew << " not better)" << endl;
+                if (netChange < bestNetChange) {
+                    bestNetChange = netChange;
+                    bestDroneIdx = i;
+                    winningNewDelta = deltaNew;
+                    isReplacement = true;
+                }
             }
         }
     }
 
-    double deltaFleet = totalFleetDistance - beforeTotal;
-    cout << "Total fleet distance: " << totalFleetDistance
-            << " (" << (deltaFleet >= 0 ? "+" : "") << deltaFleet
-            << " change)" << endl;
+    // PHASE 2: EXECUTE ON BEST CANDIDATE
+    if (bestDroneIdx != -1) {
+        DynamicTaskState& state = dynamicStates[bestDroneIdx];
+        
+        if (isReplacement) {
+            cout << "=> Drone#" << bestDroneIdx << " replaces old task " << state.name 
+                 << " with " << taskName << " (Improvement: " << bestNetChange << ")" << endl;
+            
+            // Update Fleet Distance: Remove old delta, add new delta
+            totalFleetDistance -= state.delta;
+            totalFleetDistance += winningNewDelta;
+        } else {
+            cout << "=> Drone#" << bestDroneIdx << " accepts new task " << taskName 
+                 << " (Cost: " << winningNewDelta << ")" << endl;
+            
+            // Update Fleet Distance: Add new delta
+            totalFleetDistance += winningNewDelta;
+        }
 
+        // Commit state changes
+        state.hasTask = true;
+        state.name = taskName;
+        state.pos[0] = x;
+        state.pos[1] = y;
+        state.delta = winningNewDelta;
+    } else {
+        cout << "=> No suitable drone found (threshold not met or high cost)." << endl;
+    }
+
+    cout << "Total fleet distance: " << totalFleetDistance << endl;
 }
 
 // --- Linked List / Queue / Stack Implementations ---

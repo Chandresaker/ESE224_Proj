@@ -1,0 +1,62 @@
+[Demo] AdvancedDrone, SpatialTree, DroneManager test
+Initial AdvancedDrone state:
+Drone: ADV_TEST (ID=999, Position=(5, 5))
+Tasks:
+1. TA at (0,0)
+2. TB at (1,1)
+3. TC at (2,2)
+4. TD at (3,3)
+5. TE at (4,4)
+Battery: 100%, Autopilot: DISABLED
+After low battery autoReorderTasks():
+Drone: ADV_TEST (ID=999, Position=(5, 5))
+Tasks:
+1. TE at (4,4)
+2. TD at (3,3)
+3. TC at (2,2)
+4. TB at (1,1)
+5. TA at (0,0)
+Battery: 20%, Autopilot: DISABLED
+
+SpatialTree in-order traversal:
+Drone ID=999 Pos=(5,5)
+Drone ID=101 Pos=(25,60)
+Drone ID=102 Pos=(30,45)
+Drone ID=104 Pos=(35,42)
+Drone ID=103 Pos=(40,40)
+Drone ID=105 Pos=(50,40)
+Drone ID=106 Pos=(50,50)
+Drone ID=107 Pos=(60,55)
+Drone ID=108 Pos=(70,35)
+Drone ID=110 Pos=(80,25)
+Drone ID=109 Pos=(90,90)
+Nearest to (0,0): ADV_TEST (ID=999)
+
+DroneManager roster before shuffle:
+--- DroneManager Roster ---
+0: Swift
+1: Hawk
+2: Eagle
+3: Falcon
+4: Viper
+5: Raven
+6: Condor
+7: Drone4
+8: Drone7
+9: Drone9
+10: ADV_TEST
+---------------------------
+DroneManager roster after shuffle:
+--- DroneManager Roster ---
+0: Falcon
+1: Hawk
+2: Raven
+3: Condor
+4: Drone4
+5: Drone7
+6: Swift
+7: Drone9
+8: Eagle
+9: ADV_TEST
+10: Viper
+---------------------------

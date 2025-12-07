@@ -1,0 +1,11 @@
+Select an option: 20
+
+
+[Demo] Dynamic task insertion across fleet   
+Initial fleet optimal total distance: 1365.58
+New task: MedicalKit_23 (x=52, y=48)
+=> Drone#8 accepts new task MedicalKit_23 (Cost: 0)
+Total fleet distance: 1365.58
+New task: FoodPack_42 (x=30, y=60)
+=> Drone#0 accepts new task FoodPack_42 (Cost: 0.434856)
+Total fleet distance: 1366.02

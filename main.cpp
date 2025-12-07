@@ -20,6 +20,11 @@
 #include "AdvancedDrone.h"
 #include "SpatialTree.h"
 #include "DroneManager.h"
+#include "Depot.cpp"
+#include "Drone.cpp"
+#include "AdvancedDrone.cpp"
+#include "SpatialTree.cpp"
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -97,13 +102,79 @@ void displayMenu() {
     cout << "==============================\n";
     cout << "Select an option: ";
 }
+// ==========================================
+// START DIAGNOSTIC TEST SUITE
+// ==========================================
+void runDiagnostics() {
+    cout << "\n=== STARTING DIAGNOSTICS & EDGE CASE CHECKS ===\n";
 
+    // Create temporary objects just for testing so we don't mess up the main depot
+    Depot testDepot;
+    SpatialTree testTree;
+    DroneManager<Drone> testManager;
+
+    // --- 1. Linked List Edge Cases ---
+    cout << "[Test] Linked List Removal:\n";
+    // Create dummy drones
+    Drone d1; d1.setID(9991); d1.setName("Test1");
+    Drone d2; d2.setID(9992); d2.setName("Test2");
+    Drone d3; d3.setID(9993); d3.setName("Test3");
+
+    // We pass pointers to the linked list
+    testDepot.addDroneToLinkedList(&d1);
+    testDepot.addDroneToLinkedList(&d2);
+    testDepot.addDroneToLinkedList(&d3);
+    
+    // Case: Remove Middle
+    testDepot.removeDroneFromLinkedList(9992); 
+    // Case: Remove Head (Critical Check)
+    testDepot.removeDroneFromLinkedList(9991);
+    // Case: Remove Non-Existent
+    testDepot.removeDroneFromLinkedList(8888); 
+    
+    cout << ">> Verify visual output (if implemented) or check logic flow.\n";
+    cout << "PASS: Removal operations completed without crashing.\n";
+
+    // --- 2. Queue/Stack Underflow ---
+    cout << "\n[Test] Queue/Stack Empty Operations:\n";
+    Drone* dEmpty = testDepot.dequeueDrone();
+    if (dEmpty == nullptr) cout << "PASS: Dequeue from empty returned nullptr.\n";
+    else cout << "FAIL: Dequeue from empty returned a pointer.\n";
+
+    dEmpty = testDepot.popDrone();
+    if (dEmpty == nullptr) cout << "PASS: Pop from empty returned nullptr.\n";
+    else cout << "FAIL: Pop from empty returned a pointer.\n";
+
+    // --- 3. Spatial Tree Limits ---
+    cout << "\n[Test] Spatial Search Edge Cases:\n";
+    testTree.insert(&d3); // Insert one drone
+    Drone* found = testTree.search(-100, -100); // Search far outside bounds
+    if (found == nullptr) 
+        cout << "PASS: Search returned nullptr (or valid nearest neighbor).\n";
+    else 
+        cout << "Result: Found closest drone to (-100, -100): " << found->getName() << endl;
+
+    // --- 4. Template Manager ---
+    cout << "\n[Test] DroneManager Template:\n";
+    testManager.addObject(&d3);
+    Drone* searchRes = testManager.searchDroneByID(9993);
+    if (searchRes != nullptr && searchRes->getID() == 9993) cout << "PASS: Template Search Found ID 9993.\n";
+    else cout << "FAIL: Template Search failed.\n";
+
+    cout << "=== DIAGNOSTICS COMPLETE ===\n\n";
+}
+// ==========================================
+// END DIAGNOSTIC TEST SUITE
+// ==========================================
 int main() {
+    // 1. RUN TESTS FIRST
+    runDiagnostics(); 
+
+    // 2. Proceed with normal program execution
     Depot depot;
     loadDronesFromFile(depot, "DroneInput.txt");
     cout << "Loaded " << depot.getNumDrones() << " drones from DroneInput.txt.\n";
 
-    
     int choice;
     do {
     displayMenu();          // show menu
