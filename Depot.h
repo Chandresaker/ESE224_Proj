@@ -134,4 +134,4 @@ public:
     void printMaintenanceStack() const;
 };
 
-#endif //DEPOT_H
+#endif

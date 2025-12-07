@@ -1,6 +1,6 @@
 /*
  * Project: ESE224_Proj — Drone Depot
- * Authors: Andy, Kaicheng, Patrick
+ * Authors: Andy, Patrick, Kaicheng
  * File: SpatialTree.cpp
  * Purpose:
  *   Implements the SpatialTree binary search tree over Drone objects,

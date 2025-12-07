@@ -72,4 +72,4 @@ public:
     double getDistanceToOrigin() const;
 };
 
-#endif //DRONE_H
+#endif 

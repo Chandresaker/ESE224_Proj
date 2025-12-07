@@ -103,9 +103,9 @@ void displayMenu() {
     cout << "==============================\n";
     cout << "Select an option: ";
 }
-// ==========================================
-// START DIAGNOSTIC TEST SUITE
-// ==========================================
+// ============================================
+// DIAGNOSTIC TEST SUITE  |  Author: Kaicheng
+// ============================================
 void runDiagnostics() {
     cout << "\n=== STARTING DIAGNOSTICS & EDGE CASE CHECKS ===\n";
 
@@ -169,7 +169,7 @@ void runDiagnostics() {
 // ==========================================
 int main() {
     // 1. RUN TESTS FIRST
-    runDiagnostics(); 
+    //runDiagnostics(); commented out to avoid interrupting normal flow / debugging done
 
     // 2. Proceed with normal program execution
     Depot depot;
@@ -189,9 +189,9 @@ int main() {
         *  9) Write File    10) Swap Tasks  11) Insert Task       12) Copy Drone
         * 13) List Names    14) Sort Tasks ↑ 15) Sort Tasks ↓     16) Quit
         * 17) Local Route (Greedy)          18) Global Route (Optimal)
-        * 19) Linked List register/remove   20) Dispatch Queue demo
-        * 21) Maintenance Stack demo        22) Spatial Tree build/search
-        * 23) DroneManager shuffle/search   24) AdvancedDrone polymorphism demo
+        * 19) Linked List register/remove   20) Dispatch Queue
+        * 21) Maintenance Stack             22) Spatial Tree build/search
+        * 23) DroneManager                 24) AdvancedDrone polymorphism
         * 25) Dynamic Task Insertion
         */
         

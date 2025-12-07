@@ -1,5 +1,6 @@
 /*
  * Project: ESE224_Proj — Drone Depot
+ * Authors: Andy, Patrick, Kaicheng
  * File: AdvancedDrone.cpp
  * Purpose:
  *   Implements the AdvancedDrone class, which inherits from Drone and adds
