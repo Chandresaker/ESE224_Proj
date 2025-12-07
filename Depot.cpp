@@ -631,3 +631,58 @@ Drone* Depot::popDrone() {
     maintenanceStack.pop_back();
     return top;
 }
+
+// Prints the linked list of drone IDs in-order
+void Depot::printLinkedList() const {
+    cout << "[Linked List] ";
+    Drone* current = head;
+    if (current == nullptr) {
+        cout << "(empty)" << endl;
+        return;
+    }
+
+    while (current != nullptr) {
+        cout << current->getID() << ":" << current->getName();
+        if (current->getNextDrone() != nullptr) {
+            cout << " -> ";
+        }
+        current = current->getNextDrone();
+    }
+    cout << endl;
+}
+
+// Prints the dispatch queue from front to back
+void Depot::printDispatchQueue() const {
+    cout << "[Queue] ";
+    if (dispatchQueue.empty()) {
+        cout << "(empty)" << endl;
+        return;
+    }
+
+    cout << "Front | ";
+    for (size_t i = 0; i < dispatchQueue.size(); ++i) {
+        cout << dispatchQueue[i]->getID() << ":" << dispatchQueue[i]->getName();
+        if (i + 1 < dispatchQueue.size()) {
+            cout << " | ";
+        }
+    }
+    cout << " | Back" << endl;
+}
+
+// Prints the maintenance stack from top to bottom
+void Depot::printMaintenanceStack() const {
+    cout << "[Stack] ";
+    if (maintenanceStack.empty()) {
+        cout << "(empty)" << endl;
+        return;
+    }
+
+    cout << "Top | ";
+    for (size_t i = maintenanceStack.size(); i-- > 0; ) {
+        cout << maintenanceStack[i]->getID() << ":" << maintenanceStack[i]->getName();
+        if (i != 0) {
+            cout << " | ";
+        }
+    }
+    cout << " | Bottom" << endl;
+}

@@ -124,6 +124,14 @@ public:
     void pushDrone(Drone* drone);
     // Pops and returns the top drone from the stack (or nullptr)
     Drone* popDrone();
+
+    // --- Diagnostics for List/Queue/Stack ---
+    // Prints linked list IDs in order
+    void printLinkedList() const;
+    // Prints dispatch queue from front to back
+    void printDispatchQueue() const;
+    // Prints maintenance stack from top to bottom
+    void printMaintenanceStack() const;
 };
 
 #endif //DEPOT_H

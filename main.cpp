@@ -20,10 +20,6 @@
 #include "AdvancedDrone.h"
 #include "SpatialTree.h"
 #include "DroneManager.h"
-#include "Depot.cpp"
-#include "Drone.cpp"
-#include "AdvancedDrone.cpp"
-#include "SpatialTree.cpp"
 
 #include <iostream>
 #include <fstream>
@@ -97,8 +93,13 @@ void displayMenu() {
     cout << "16. Quit\n";
     cout << "17. Local Optimum Route (Greedy)\n";
     cout << "18. Global Optimum Route (Exact)\n";
-    cout << "19. Test Advanced/Tree/Manager\n";
-    cout << "20. Dynamic Insertion Demo\n";
+    cout << "19. Linked List register/remove\n";
+    cout << "20. Dispatch Queue\n";
+    cout << "21. Maintenance Stack\n";
+    cout << "22. Spatial Tree build/search\n";
+    cout << "23. DroneManager Access\n";
+    cout << "24. AdvancedDrone polymorphism\n";
+    cout << "25. Dynamic Task Insertion\n";
     cout << "==============================\n";
     cout << "Select an option: ";
 }
@@ -188,8 +189,10 @@ int main() {
         *  9) Write File    10) Swap Tasks  11) Insert Task       12) Copy Drone
         * 13) List Names    14) Sort Tasks ↑ 15) Sort Tasks ↓     16) Quit
         * 17) Local Route (Greedy)          18) Global Route (Optimal)
-        * 19) Test AdvancedDrone, SpatialTree, DroneManager
-        * 20) Dynamic Insertion Demo
+        * 19) Linked List register/remove   20) Dispatch Queue demo
+        * 21) Maintenance Stack demo        22) Spatial Tree build/search
+        * 23) DroneManager shuffle/search   24) AdvancedDrone polymorphism demo
+        * 25) Dynamic Task Insertion
         */
         
         switch (choice) {
@@ -345,75 +348,395 @@ int main() {
             break;
         }
         case 19: {
-            cout << "\n[Demo] AdvancedDrone, SpatialTree, DroneManager test" << endl;
+            cout << "[Linked List Operations - modifies depot]" << endl;
+            cout << "Current linked list state:" << endl;
+            depot.printLinkedList();
 
-            AdvancedDrone adv;
-            adv.setName("ADV_TEST");
-            adv.setID(999);
-            adv.setInitPosition(0, 5);
-            adv.setInitPosition(1, 5);
-            for (int i = 0; i < 5; ++i) {
-                string tname = string("T") + char('A' + i);
-                adv.setTask(i, tname);
-                adv.setTaskPosition(i, 0, i);
-                adv.setTaskPosition(i, 1, i);
+            cout << "\n1. Add NEW drone to depot and linked list" << endl;
+            cout << "2. Register existing drones to linked list" << endl;
+            cout << "3. Remove drone from linked list by ID" << endl;
+            cout << "Select operation (0 to skip): ";
+            int listOp;
+            cin >> listOp;
+
+            if (listOp == 1) {
+                // Create and add a new drone to depot
+                Drone newDrone;
+                string name;
+                int id, x, y;
+                cout << "Enter drone name: ";
+                cin >> name;
+                cout << "Enter drone ID: ";
+                cin >> id;
+                cout << "Enter initial position (x y): ";
+                cin >> x >> y;
+                newDrone.setName(name);
+                newDrone.setID(id);
+                newDrone.setInitPosition(0, x);
+                newDrone.setInitPosition(1, y);
+                // Add to depot
+                depot.addDrone(newDrone);
+                cout << "Drone added to depot. Total drones: " << depot.getNumDrones() << endl;
+                // Also add to linked list
+                depot.addDroneToLinkedList(&depot.getDrone(depot.getNumDrones() - 1));
+                cout << "Drone registered in linked list." << endl;
+            } else if (listOp == 2) {
+                cout << "Adding all depot drones to linked list by ID..." << endl;
+                for (int i = 0; i < depot.getNumDrones(); ++i) {
+                    depot.addDroneToLinkedList(&depot.getDrone(i));
+                }
+            } else if (listOp == 3) {
+                cout << "Enter ID to remove from linked list: ";
+                int removeId;
+                cin >> removeId;
+                depot.removeDroneFromLinkedList(removeId);
+                cout << "Removed from linked list (drone still in depot)." << endl;
             }
 
-            cout << "Initial AdvancedDrone state:" << endl;
-            adv.displayDrone();
+            cout << "\nFinal linked list state:" << endl;
+            depot.printLinkedList();
+            break;
+        }
+        case 20: {
+            cout << "[Dispatch Queue Operations - modifies depot]" << endl;
+            cout << "Current queue state:" << endl;
+            depot.printDispatchQueue();
 
-            adv.updateBattery(-80.0f); // drop battery below 30%
-            adv.autoReorderTasks();
+            cout << "\n1. Add NEW drone to depot and enqueue" << endl;
+            cout << "2. Enqueue existing drone by index" << endl;
+            cout << "3. Dequeue front drone" << endl;
+            cout << "Select operation (0 to skip): ";
+            int queueOp;
+            cin >> queueOp;
 
-            cout << "After low battery autoReorderTasks():" << endl;
-            adv.displayDrone();
+            if (queueOp == 1) {
+                // Create and add a new drone to depot
+                Drone newDrone;
+                string name;
+                int id, x, y;
+                cout << "Enter drone name: ";
+                cin >> name;
+                cout << "Enter drone ID: ";
+                cin >> id;
+                cout << "Enter initial position (x y): ";
+                cin >> x >> y;
+                newDrone.setName(name);
+                newDrone.setID(id);
+                newDrone.setInitPosition(0, x);
+                newDrone.setInitPosition(1, y);
+                // Add to depot
+                depot.addDrone(newDrone);
+                cout << "Drone added to depot. Total drones: " << depot.getNumDrones() << endl;
+                // Also enqueue
+                depot.enqueueDrone(&depot.getDrone(depot.getNumDrones() - 1));
+                cout << "Drone enqueued for dispatch." << endl;
+            } else if (queueOp == 2) {
+                if (depot.getNumDrones() == 0) {
+                    cout << "No drones in depot to enqueue." << endl;
+                } else {
+                    cout << "Enter drone index to enqueue (0-" << depot.getNumDrones()-1 << "): ";
+                    int enqIdx;
+                    cin >> enqIdx;
+                    if (enqIdx >= 0 && enqIdx < depot.getNumDrones()) {
+                        depot.enqueueDrone(&depot.getDrone(enqIdx));
+                        cout << "Enqueued: " << depot.getDrone(enqIdx).getName() << endl;
+                    } else {
+                        cout << "Invalid index." << endl;
+                    }
+                }
+            } else if (queueOp == 3) {
+                Drone* dequeued = depot.dequeueDrone();
+                if (dequeued) {
+                    cout << "Dequeued: " << dequeued->getName() << " (ID=" << dequeued->getID() << ")" << endl;
+                } else {
+                    cout << "Queue was empty." << endl;
+                }
+            }
 
+            cout << "\nFinal queue state:" << endl;
+            depot.printDispatchQueue();
+            break;
+        }
+        case 21: {
+            cout << "[Maintenance Stack Operations - modifies depot]" << endl;
+            cout << "Current stack state:" << endl;
+            depot.printMaintenanceStack();
+
+            cout << "\n1. Add NEW drone to depot and push to stack" << endl;
+            cout << "2. Push existing drone by index" << endl;
+            cout << "3. Pop top drone from stack" << endl;
+            cout << "Select operation (0 to skip): ";
+            int stackOp;
+            cin >> stackOp;
+
+            if (stackOp == 1) {
+                // Create and add a new drone to depot
+                Drone newDrone;
+                string name;
+                int id, x, y;
+                cout << "Enter drone name: ";
+                cin >> name;
+                cout << "Enter drone ID: ";
+                cin >> id;
+                cout << "Enter initial position (x y): ";
+                cin >> x >> y;
+                newDrone.setName(name);
+                newDrone.setID(id);
+                newDrone.setInitPosition(0, x);
+                newDrone.setInitPosition(1, y);
+                // Add to depot
+                depot.addDrone(newDrone);
+                cout << "Drone added to depot. Total drones: " << depot.getNumDrones() << endl;
+                // Also push to stack
+                depot.pushDrone(&depot.getDrone(depot.getNumDrones() - 1));
+                cout << "Drone pushed to maintenance stack." << endl;
+            } else if (stackOp == 2) {
+                if (depot.getNumDrones() == 0) {
+                    cout << "No drones in depot to push." << endl;
+                } else {
+                    cout << "Enter drone index to push (0-" << depot.getNumDrones()-1 << "): ";
+                    int pushIdx;
+                    cin >> pushIdx;
+                    if (pushIdx >= 0 && pushIdx < depot.getNumDrones()) {
+                        depot.pushDrone(&depot.getDrone(pushIdx));
+                        cout << "Pushed: " << depot.getDrone(pushIdx).getName() << endl;
+                    } else {
+                        cout << "Invalid index." << endl;
+                    }
+                }
+            } else if (stackOp == 3) {
+                Drone* popped = depot.popDrone();
+                if (popped) {
+                    cout << "Popped: " << popped->getName() << " (ID=" << popped->getID() << ")" << endl;
+                } else {
+                    cout << "Stack was empty." << endl;
+                }
+            }
+
+            cout << "\nFinal stack state:" << endl;
+            depot.printMaintenanceStack();
+            break;
+        }
+        case 22: {
+            if (depot.getNumDrones() == 0) { cout << "No drones loaded.\n"; break; }
+
+            cout << "[Spatial Tree - all traversals and search]" << endl;
             SpatialTree tree;
-            // Insert all existing depot drones plus the AdvancedDrone
             for (int i = 0; i < depot.getNumDrones(); ++i) {
                 tree.insert(&depot.getDrone(i));
             }
-            tree.insert(&adv);
+            cout << "Inserted " << depot.getNumDrones() << " drones into spatial tree." << endl;
 
-            cout << "\nSpatialTree in-order traversal:" << endl;
+            cout << "\n--- In-Order Traversal ---" << endl;
             tree.traverseInOrder();
 
-            Drone* nearest = tree.search(0, 0);
-            if (nearest) {
-                cout << "Nearest to (0,0): " << nearest->getName() << " (ID="
-                     << nearest->getID() << ")" << endl;
-            }
+            cout << "\n--- Pre-Order Traversal ---" << endl;
+            tree.traversePreOrder();
 
+            cout << "\n--- Post-Order Traversal ---" << endl;
+            tree.traversePostOrder();
+
+            int sx, sy;
+            cout << "\nEnter (x y) to search nearest: ";
+            cin >> sx >> sy;
+            Drone* nearest = tree.search(sx, sy);
+            if (nearest) {
+                cout << "Nearest to (" << sx << "," << sy << "): "
+                     << nearest->getName() << " (ID=" << nearest->getID() 
+                     << ") at (" << nearest->getInitPosition(0) << "," 
+                     << nearest->getInitPosition(1) << ")" << endl;
+            } else {
+                cout << "Tree was empty." << endl;
+            }
+            break;
+        }
+        case 23: {
+            cout << "[DroneManager Template Operations]" << endl;
+            
+            // Build manager from current depot drones
             DroneManager<Drone> manager;
             for (int i = 0; i < depot.getNumDrones(); ++i) {
                 manager.addObject(&depot.getDrone(i));
             }
-            manager.addObject(&adv);
+            cout << "Manager loaded with " << manager.getSize() << " drones from depot." << endl;
 
-            cout << "\nDroneManager roster before shuffle:" << endl;
+            cout << "\n1. Add drone to manager (addObject)" << endl;
+            cout << "2. Sort by Name (sortDronesByName)" << endl;
+            cout << "3. Sort by ID (sortDronesByID)" << endl;
+            cout << "4. Sort by Position (sortDronesByPosition)" << endl;
+            cout << "5. Randomize order (randomizeDroneOrder)" << endl;
+            cout << "6. Get drone by index (getObject)" << endl;
+            cout << "7. Search by ID (searchDroneByID)" << endl;
+            cout << "8. Search by Name (searchDroneByName)" << endl;
+            cout << "9. Print roster (printAllDroneNames)" << endl;
+            cout << "10. Get size (getSize)" << endl;
+            cout << "Select operation (0 to skip): ";
+
+            cout << "\n\nInitial manager roster:" << endl;
             manager.printAllDroneNames();
 
-            manager.randomizeDroneOrder();
+            int mgrOp;
+            cin >> mgrOp;
 
-            cout << "DroneManager roster after shuffle:" << endl;
-            manager.printAllDroneNames();
+            if (mgrOp == 1) {
+                // Create a new drone, add to depot, then add to manager
+                Drone newDrone;
+                string name;
+                int id, x, y;
+                cout << "Enter drone name: ";
+                cin >> name;
+                cout << "Enter drone ID: ";
+                cin >> id;
+                cout << "Enter initial position (x y): ";
+                cin >> x >> y;
+                newDrone.setName(name);
+                newDrone.setID(id);
+                newDrone.setInitPosition(0, x);
+                newDrone.setInitPosition(1, y);
+                // Add to depot first (so it persists)
+                depot.addDrone(newDrone);
+                cout << "Drone added to depot. Total drones: " << depot.getNumDrones() << endl;
+                // Add the depot's copy to manager
+                manager.addObject(&depot.getDrone(depot.getNumDrones() - 1));
+                cout << "Drone also added to manager. Manager size: " << manager.getSize() << endl;
+            } else if (mgrOp == 2) {
+                manager.sortDronesByName();
+                cout << "Manager sorted by name:" << endl;
+                manager.printAllDroneNames();
+            } else if (mgrOp == 3) {
+                manager.sortDronesByID();
+                cout << "Manager sorted by ID:" << endl;
+                manager.printAllDroneNames();
+            } else if (mgrOp == 4) {
+                manager.sortDronesByPosition();
+                cout << "Manager sorted by position (distance from origin):" << endl;
+                manager.printAllDroneNames();
+            } else if (mgrOp == 5) {
+                manager.randomizeDroneOrder();
+                cout << "Manager order randomized:" << endl;
+                manager.printAllDroneNames();
+            } else if (mgrOp == 6) {
+                if (manager.getSize() == 0) {
+                    cout << "Manager is empty." << endl;
+                } else {
+                    cout << "Enter manager index (0-" << manager.getSize()-1 << "): ";
+                    int idx;
+                    cin >> idx;
+                    if (idx >= 0 && idx < manager.getSize()) {
+                        Drone* d = manager.getObject(idx);
+                        if (d) {
+                            cout << "Drone at manager index " << idx << ":" << endl;
+                            d->displayDrone();
+                        }
+                    } else {
+                        cout << "Invalid index." << endl;
+                    }
+                }
+            } else if (mgrOp == 7) {
+                cout << "Enter ID to search: ";
+                int searchId;
+                cin >> searchId;
+                Drone* found = manager.searchDroneByID(searchId);
+                if (found) {
+                    cout << "Found by ID:" << endl;
+                    found->displayDrone();
+                } else {
+                    cout << "Not found by ID." << endl;
+                }
+            } else if (mgrOp == 8) {
+                cout << "Enter name to search: ";
+                string searchName;
+                cin >> searchName;
+                Drone* found = manager.searchDroneByName(searchName);
+                if (found) {
+                    cout << "Found by name:" << endl;
+                    found->displayDrone();
+                } else {
+                    cout << "Not found by name." << endl;
+                }
+            } else if (mgrOp == 9) {
+                manager.printAllDroneNames();
+            } else if (mgrOp == 10) {
+                cout << "Manager size: " << manager.getSize() << " drones" << endl;
+            }
 
             break;
         }
-        case 20: {
-            if (depot.getNumDrones() == 0) {
-                cout << "No drones loaded.\n";
-                break;
+        case 24: {
+            cout << "[AdvancedDrone Polymorphism Demo]" << endl;
+
+            // Create AdvancedDrone with user input
+            AdvancedDrone adv;
+            string advName;
+            int advId, advX, advY;
+            cout << "Enter AdvancedDrone name: ";
+            cin >> advName;
+            cout << "Enter AdvancedDrone ID: ";
+            cin >> advId;
+            cout << "Enter initial position (x y): ";
+            cin >> advX >> advY;
+
+            adv.setName(advName);
+            adv.setID(advId);
+            adv.setInitPosition(0, advX);
+            adv.setInitPosition(1, advY);
+
+            // Set up tasks
+            for (int i = 0; i < 5; ++i) {
+                string tname = string("Task") + to_string(i + 1);
+                adv.setTask(i, tname);
+                adv.setTaskPosition(i, 0, advX + i * 2);
+                adv.setTaskPosition(i, 1, advY + i * 2);
             }
 
-            cout << "\n[Demo] Dynamic task insertion across fleet" << endl;
+            cout << "\n--- Initial AdvancedDrone state ---" << endl;
+            adv.displayDrone();
 
-            // Initialize dynamic insertion state
+            cout << "\nEnable autopilot? (1=yes, 0=no): ";
+            int enableAuto;
+            cin >> enableAuto;
+            if (enableAuto == 1) {
+                adv.enableAutopilot();
+                cout << "Autopilot enabled." << endl;
+            }
+
+            cout << "\nEnter battery change (e.g., -80 to drain): ";
+            float batteryDelta;
+            cin >> batteryDelta;
+            adv.updateBattery(batteryDelta);
+
+            cout << "\n--- After battery update ---" << endl;
+            adv.displayDrone();
+
+            cout << "\nTrigger autoReorderTasks (reverses if battery < 30%)..." << endl;
+            adv.autoReorderTasks();
+            cout << "--- After autoReorderTasks ---" << endl;
+            adv.displayDrone();
+
+            // Demonstrate polymorphism via base pointer
+            Drone* basePtr = &adv;
+            cout << "\n--- Via base Drone pointer (virtual dispatch) ---" << endl;
+            basePtr->displayDrone();
+
+            // Add to depot so it persists
+            cout << "\nAdd this AdvancedDrone to depot? (1=yes, 0=no): ";
+            int addToDepot;
+            cin >> addToDepot;
+            if (addToDepot == 1) {
+                depot.addDrone(adv);  // slicing copies base Drone attributes
+                cout << "AdvancedDrone added to depot (as Drone). Total drones: " 
+                     << depot.getNumDrones() << endl;
+            }
+            break;
+        }
+        case 25: {
+            if (depot.getNumDrones() == 0) { cout << "No drones loaded.\n"; break; }
+
+            cout << "[Dynamic Task Insertion - modifies depot state]" << endl;
+
             depot.initializeDynamicInsertion();
 
-            // Compute a simple base fleet distance as the sum of each drone's
-            // optimal closed route. We reuse computeOptimalRoute but capture
-            // only the distance by writing to a temporary stringstream.
+            // Compute a base fleet distance by summing optimal routes
             double totalFleetDistance = 0.0;
             for (int i = 0; i < depot.getNumDrones(); ++i) {
                 ostringstream oss;
@@ -436,12 +759,27 @@ int main() {
             cout << "Initial fleet optimal total distance: "
                  << totalFleetDistance << endl;
 
-            double threshold = 0.0; // replacementThreshold
+            cout << "\nEnter replacement threshold (0 for any improvement): ";
+            double threshold;
+            cin >> threshold;
 
-            // Example dynamic tasks (could be replaced with user input)
-            depot.processDynamicTask("MedicalKit_23", 52, 48, threshold, totalFleetDistance);
-            depot.processDynamicTask("FoodPack_42", 30, 60, threshold, totalFleetDistance);
+            char addMore = 'y';
+            while (addMore == 'y' || addMore == 'Y') {
+                string taskName;
+                int taskX, taskY;
+                cout << "\nEnter new task name: ";
+                cin >> taskName;
+                cout << "Enter task position (x y): ";
+                cin >> taskX >> taskY;
 
+                depot.processDynamicTask(taskName, taskX, taskY, threshold, totalFleetDistance);
+
+                cout << "\nAdd another dynamic task? (y/n): ";
+                cin >> addMore;
+            }
+
+            cout << "\nFinal fleet distance after dynamic insertions: " 
+                 << totalFleetDistance << endl;
             break;
         }
         default:
