@@ -17,9 +17,13 @@
 
 #include "Depot.h"
 #include "Drone.h"
+#include "AdvancedDrone.h"
+#include "SpatialTree.h"
+#include "DroneManager.h"
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
 using namespace std;
 
 // Loads up to 10 drones (each with 5 tasks) from the given text file.
@@ -88,6 +92,8 @@ void displayMenu() {
     cout << "16. Quit\n";
     cout << "17. Local Optimum Route (Greedy)\n";
     cout << "18. Global Optimum Route (Exact)\n";
+    cout << "19. Test Advanced/Tree/Manager\n";
+    cout << "20. Dynamic Insertion Demo\n";
     cout << "==============================\n";
     cout << "Select an option: ";
 }
@@ -111,6 +117,8 @@ int main() {
         *  9) Write File    10) Swap Tasks  11) Insert Task       12) Copy Drone
         * 13) List Names    14) Sort Tasks ↑ 15) Sort Tasks ↓     16) Quit
         * 17) Local Route (Greedy)          18) Global Route (Optimal)
+        * 19) Test AdvancedDrone, SpatialTree, DroneManager
+        * 20) Dynamic Insertion Demo
         */
         
         switch (choice) {
@@ -263,6 +271,106 @@ int main() {
             } else {
                 cout << "Invalid index.\n";
             }
+            break;
+        }
+        case 19: {
+            cout << "\n[Demo] AdvancedDrone, SpatialTree, DroneManager test" << endl;
+
+            AdvancedDrone adv;
+            adv.setName("ADV_TEST");
+            adv.setID(999);
+            adv.setInitPosition(0, 5);
+            adv.setInitPosition(1, 5);
+            for (int i = 0; i < 5; ++i) {
+                string tname = string("T") + char('A' + i);
+                adv.setTask(i, tname);
+                adv.setTaskPosition(i, 0, i);
+                adv.setTaskPosition(i, 1, i);
+            }
+
+            cout << "Initial AdvancedDrone state:" << endl;
+            adv.displayDrone();
+
+            adv.updateBattery(-80.0f); // drop battery below 30%
+            adv.autoReorderTasks();
+
+            cout << "After low battery autoReorderTasks():" << endl;
+            adv.displayDrone();
+
+            SpatialTree tree;
+            // Insert all existing depot drones plus the AdvancedDrone
+            for (int i = 0; i < depot.getNumDrones(); ++i) {
+                tree.insert(&depot.getDrone(i));
+            }
+            tree.insert(&adv);
+
+            cout << "\nSpatialTree in-order traversal:" << endl;
+            tree.traverseInOrder();
+
+            Drone* nearest = tree.search(0, 0);
+            if (nearest) {
+                cout << "Nearest to (0,0): " << nearest->getName() << " (ID="
+                     << nearest->getID() << ")" << endl;
+            }
+
+            DroneManager<Drone> manager;
+            for (int i = 0; i < depot.getNumDrones(); ++i) {
+                manager.addObject(&depot.getDrone(i));
+            }
+            manager.addObject(&adv);
+
+            cout << "\nDroneManager roster before shuffle:" << endl;
+            manager.printAllDroneNames();
+
+            manager.randomizeDroneOrder();
+
+            cout << "DroneManager roster after shuffle:" << endl;
+            manager.printAllDroneNames();
+
+            break;
+        }
+        case 20: {
+            if (depot.getNumDrones() == 0) {
+                cout << "No drones loaded.\n";
+                break;
+            }
+
+            cout << "\n[Demo] Dynamic task insertion across fleet" << endl;
+
+            // Initialize dynamic insertion state
+            depot.initializeDynamicInsertion();
+
+            // Compute a simple base fleet distance as the sum of each drone's
+            // optimal closed route. We reuse computeOptimalRoute but capture
+            // only the distance by writing to a temporary stringstream.
+            double totalFleetDistance = 0.0;
+            for (int i = 0; i < depot.getNumDrones(); ++i) {
+                ostringstream oss;
+                depot.computeOptimalRoute(i, oss);
+
+                string line;
+                double dist = 0.0;
+                istringstream iss(oss.str());
+                while (getline(iss, line)) {
+                    const string tag = "Total distance (optimal): ";
+                    size_t pos = line.find(tag);
+                    if (pos != string::npos) {
+                        dist = stod(line.substr(pos + tag.size()));
+                        break;
+                    }
+                }
+                totalFleetDistance += dist;
+            }
+
+            cout << "Initial fleet optimal total distance: "
+                 << totalFleetDistance << endl;
+
+            double threshold = 0.0; // replacementThreshold
+
+            // Example dynamic tasks (could be replaced with user input)
+            depot.processDynamicTask("MedicalKit_23", 52, 48, threshold, totalFleetDistance);
+            depot.processDynamicTask("FoodPack_42", 30, 60, threshold, totalFleetDistance);
+
             break;
         }
         default:

@@ -22,11 +22,32 @@ private:
     // Private attribute for the fleet
     vector<Drone> drones;
 
+    // --- Pointer-based linked list (registration by ID) ---
+    // Head of linked list of drones ordered by ID
+    Drone* head = nullptr;
+
+    // --- Vector-based queue and stack (no std::queue/stack) ---
+    // Dispatch queue (FIFO)
+    vector<Drone*> dispatchQueue;
+    // Maintenance stack (LIFO)
+    vector<Drone*> maintenanceStack;
+
     // --- Bonus Helper Methods ---
     // Calculates distance between two 2D points
     double getTaskDistance(int pos1[2], int pos2[2]);
     // Recursive helper for finding the optimal (brute-force) route
     void findOptimalPermutation(int droneIdx, int taskIndices[], int k, double& minDistance, int bestPath[]);
+
+    // --- Dynamic Insertion State ---
+    struct DynamicTaskState {
+        bool   hasTask = false;   // whether this drone currently has a pending inserted task
+        string name;              // name of the inserted task
+        int    pos[2] = {0, 0};   // (x,y) of inserted task
+        double delta = 0.0;       // additional distance contributed by this task
+    };
+
+    // For each drone in 'drones', track its current dynamic task state
+    vector<DynamicTaskState> dynamicStates;
 
 public:
     // --- Core Methods ---
@@ -78,6 +99,31 @@ public:
     void computeGreedyRoute(int droneIdx, ostream& out);
     // Computes and prints the global optimal route for a drone
     void computeOptimalRoute(int droneIdx, ostream& out);
+
+    // --- Dynamic Task Insertion (Bonus) ---
+    // Initializes internal dynamic insertion tracking (must be called after loading drones).
+    void initializeDynamicInsertion();
+
+    // Processes a newly arriving task (name, x, y). For each drone, evaluates inserting or
+    // replacing a pending dynamic task, updates state and total distance, and prints decisions.
+    // 'totalFleetDistance' should be maintained by the caller across calls.
+    void processDynamicTask(const string& taskName, int x, int y,
+                            double replacementThreshold,
+                            double& totalFleetDistance);
+
+    // --- Linked List / Queue / Stack Management ---
+    // Adds a drone to the linked list ordered by ID
+    void addDroneToLinkedList(Drone* drone);
+    // Removes a drone by ID from the linked list
+    void removeDroneFromLinkedList(int id);
+    // Adds a drone to the dispatch queue (FIFO)
+    void enqueueDrone(Drone* drone);
+    // Removes and returns the front drone from the queue (or nullptr)
+    Drone* dequeueDrone();
+    // Pushes a drone onto the maintenance stack (LIFO)
+    void pushDrone(Drone* drone);
+    // Pops and returns the top drone from the stack (or nullptr)
+    Drone* popDrone();
 };
 
 #endif //DEPOT_H

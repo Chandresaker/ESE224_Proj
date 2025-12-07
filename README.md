@@ -4,3 +4,9 @@ Proj deadline 11/1
 
 To do:
 Report
+
+Final Project Due Tmr 12/7:
+
+12/6:
+    -New classes/subclasses + initial testing in main done. 
+    -Need further testing for case by case in main and debugging checks for edge cases. 

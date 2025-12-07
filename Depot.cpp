@@ -29,6 +29,11 @@ using namespace std;
 // Adds a drone to the vector
 void Depot::addDrone(Drone& d1) {
     drones.push_back(d1);
+
+    // Ensure dynamicStates stays in sync size-wise (default state for new drone)
+    if (dynamicStates.size() < drones.size()) {
+        dynamicStates.push_back(DynamicTaskState());
+    }
 }
 
 // Retrieves a reference to a drone at a specific index
@@ -40,6 +45,14 @@ Drone& Depot::getDrone(int index) {
 // Gets the total number of drones in the depot
 int Depot::getNumDrones() const {
     return drones.size();
+}
+
+// --- Dynamic Insertion Initialization ---
+
+// Call once after loading initial drones to reset dynamic task state
+void Depot::initializeDynamicInsertion() {
+    dynamicStates.clear();
+    dynamicStates.resize(drones.size());
 }
 
 // --- Sorting Implementations (Manual Bubble Sort) ---
@@ -372,4 +385,223 @@ void Depot::computeOptimalRoute(int droneIdx, ostream& out) {
     }
     out << " -> (" << startPos[0] << "," << startPos[1] << ")" << endl;
     out << "Total distance (optimal): " << minDistance << endl;
+}
+
+// --- Dynamic Task Insertion (Bonus) ---
+
+// Helper: compute additional distance if we insert a new task into drone d
+// We approximate by choosing the best insertion position into the existing 5-task route.
+// Returns the minimal extra distance (Delta) and does NOT modify the drone's base tasks.
+static double computeInsertionDeltaForDrone(Drone& d, int newPos[2]) {
+    // Build base route order [0..4] using current task order
+    int order[5] = {0, 1, 2, 3, 4};
+
+    int startPos[2] = {d.getInitPosition(0), d.getInitPosition(1)};
+
+    // Compute original closed route length
+    auto distanceBetween = [&](int p1[2], int p2[2]) {
+        double x_diff = static_cast<double>(p1[0] - p2[0]);
+        double y_diff = static_cast<double>(p1[1] - p2[1]);
+        return sqrt(pow(x_diff, 2) + pow(y_diff, 2));
+    };
+
+    int curr[2] = {startPos[0], startPos[1]};
+    double baseDist = 0.0;
+    for (int i = 0; i < 5; ++i) {
+        int nextPos[2] = {d.getTaskPosition(order[i], 0), d.getTaskPosition(order[i], 1)};
+        baseDist += distanceBetween(curr, nextPos);
+        curr[0] = nextPos[0];
+        curr[1] = nextPos[1];
+    }
+    baseDist += distanceBetween(curr, startPos);
+
+    // Try inserting new task at all positions along the closed tour
+    double bestDelta = std::numeric_limits<double>::max();
+
+    // We model the 6-segment closed tour (start -> 5 tasks -> start) and
+    // insert the new point by splitting one segment.
+    for (int i = 0; i < 6; ++i) {
+        int A[2];
+        int B[2];
+        if (i == 0) {
+            // segment: start -> first task
+            A[0] = startPos[0];
+            A[1] = startPos[1];
+            B[0] = d.getTaskPosition(order[0], 0);
+            B[1] = d.getTaskPosition(order[0], 1);
+        } else if (i == 5) {
+            // segment: last task -> start
+            A[0] = d.getTaskPosition(order[4], 0);
+            A[1] = d.getTaskPosition(order[4], 1);
+            B[0] = startPos[0];
+            B[1] = startPos[1];
+        } else {
+            // segment: task[i-1] -> task[i]
+            A[0] = d.getTaskPosition(order[i - 1], 0);
+            A[1] = d.getTaskPosition(order[i - 1], 1);
+            B[0] = d.getTaskPosition(order[i], 0);
+            B[1] = d.getTaskPosition(order[i], 1);
+        }
+
+        double oldSeg = distanceBetween(A, B);
+        double newSeg = distanceBetween(A, newPos) + distanceBetween(newPos, B);
+        double candidateDist = baseDist - oldSeg + newSeg;
+        double delta = candidateDist - baseDist;
+
+        if (delta < bestDelta) {
+            bestDelta = delta;
+        }
+    }
+
+    return bestDelta;
+}
+
+// Processes a newly arriving task across all drones.
+// replacementThreshold: minimum improvement required to replace an existing dynamic task.
+void Depot::processDynamicTask(const string& taskName, int x, int y,
+                              double replacementThreshold,
+                              double& totalFleetDistance) {
+    if (drones.empty()) return;
+
+    if (dynamicStates.size() != drones.size()) {
+        dynamicStates.clear();
+        dynamicStates.resize(drones.size());
+    }
+
+    int newPos[2] = {x, y};
+
+    cout << "New task: " << taskName << " (x=" << x << ", y=" << y << ")" << endl;
+    // Track fleet distance before processing this task to report net change
+    double beforeTotal = totalFleetDistance;
+
+    for (size_t i = 0; i < drones.size(); ++i) {
+        Drone& d = drones[i];
+        DynamicTaskState& state = dynamicStates[i];
+
+        double deltaNew = computeInsertionDeltaForDrone(d, newPos);
+
+        if (!state.hasTask) {
+            // Simple insertion: this drone had no dynamic task yet.
+            state.hasTask = true;
+            state.name = taskName;
+            state.pos[0] = x;
+            state.pos[1] = y;
+            state.delta = deltaNew;
+
+            totalFleetDistance += deltaNew;
+
+            cout << "Drone#" << i << ": Insert =" << deltaNew << endl;
+        } else {
+            // Decide whether to replace existing dynamic task
+            double deltaOld = state.delta;
+            if (deltaNew < deltaOld - replacementThreshold) {
+                cout << "Drone#" << i << ": Replace old task " << state.name
+                     << " (old=" << deltaOld
+                     << " new=" << deltaNew << ")" << endl;
+
+                // Update total fleet distance: remove old delta, add new
+                totalFleetDistance -= deltaOld;
+                totalFleetDistance += deltaNew;
+
+                // Update to the newly chosen task
+                state.name = taskName;
+                state.pos[0] = x;
+                state.pos[1] = y;
+                state.delta = deltaNew;
+
+                cout << "=> Drone#" << i << " now tracks task " << taskName << endl;
+            } else {
+                cout << "Drone#" << i << ": Keep existing task " << state.name
+                     << " (old=" << deltaOld
+                     << ", new=" << deltaNew << " not better)" << endl;
+            }
+        }
+    }
+
+    double deltaFleet = totalFleetDistance - beforeTotal;
+    cout << "Total fleet distance: " << totalFleetDistance
+            << " (" << (deltaFleet >= 0 ? "+" : "") << deltaFleet
+            << " change)" << endl;
+
+}
+
+// --- Linked List / Queue / Stack Implementations ---
+
+// Inserts drone into linked list ordered by ID (ascending)
+void Depot::addDroneToLinkedList(Drone* drone) {
+    if (drone == nullptr) return;
+
+    // If list is empty or new drone has smallest ID, insert at head
+    if (head == nullptr || drone->getID() < head->getID()) {
+        drone->setNextDrone(head);
+        head = drone;
+        return;
+    }
+
+    // Find insertion point
+    Drone* current = head;
+    while (current->getNextDrone() != nullptr &&
+           current->getNextDrone()->getID() < drone->getID()) {
+        current = current->getNextDrone();
+    }
+
+    drone->setNextDrone(current->getNextDrone());
+    current->setNextDrone(drone);
+}
+
+// Removes a drone with the given ID from the linked list
+void Depot::removeDroneFromLinkedList(int id) {
+    if (head == nullptr) return;
+
+    // If head is the node to remove
+    if (head->getID() == id) {
+        Drone* temp = head;
+        head = head->getNextDrone();
+        temp->setNextDrone(nullptr);
+        return;
+    }
+
+    Drone* current = head;
+    while (current->getNextDrone() != nullptr &&
+           current->getNextDrone()->getID() != id) {
+        current = current->getNextDrone();
+    }
+
+    if (current->getNextDrone() != nullptr) {
+        Drone* toRemove = current->getNextDrone();
+        current->setNextDrone(toRemove->getNextDrone());
+        toRemove->setNextDrone(nullptr);
+    }
+}
+
+// Adds a drone to the end of the queue (FIFO) using vector
+void Depot::enqueueDrone(Drone* drone) {
+    if (drone == nullptr) return;
+    dispatchQueue.push_back(drone);
+}
+
+// Removes and returns the front drone from the queue
+Drone* Depot::dequeueDrone() {
+    if (dispatchQueue.empty()) {
+        return nullptr;
+    }
+    Drone* front = dispatchQueue.front();
+    dispatchQueue.erase(dispatchQueue.begin());
+    return front;
+}
+
+// Pushes a drone onto the top of the stack
+void Depot::pushDrone(Drone* drone) {
+    if (drone == nullptr) return;
+    maintenanceStack.push_back(drone);
+}
+
+// Pops and returns the top drone from the stack
+Drone* Depot::popDrone() {
+    if (maintenanceStack.empty()) {
+        return nullptr;
+    }
+    Drone* top = maintenanceStack.back();
+    maintenanceStack.pop_back();
+    return top;
 }

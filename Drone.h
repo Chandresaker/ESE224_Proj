@@ -24,6 +24,8 @@ private:
     string tasks[5];
     int init_position[2];
     int task_positions[5][2];
+    // Pointer to the next drone in the linked list
+    Drone* nextDrone;
 
 public:
     // Default constructor
@@ -43,6 +45,12 @@ public:
     void setInitPosition(int index, int pos);
     void setTaskPosition(int taskIndex, int posIndex, int pos);
 
+    // --- Linked List Connection Methods ---
+    // Sets the next drone in the linked list
+    void setNextDrone(Drone* next);
+    // Returns the next drone in the linked list
+    Drone* getNextDrone() const;
+
     // --- Sorting Methods ---
     // Manually sorts tasks in ascending order
     void sortByAscending();
@@ -51,7 +59,7 @@ public:
 
     // --- Display Method ---
     // Displays all attributes of the drone
-    void displayDrone() const;
+    virtual void displayDrone() const;
 
     // --- Operator Overloads ---
     // Copies all attributes from d2 into this object

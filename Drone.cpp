@@ -26,11 +26,24 @@ Drone::Drone() {
     name = "";
     init_position[0] = 0;
     init_position[1] = 0;
+    nextDrone = nullptr;
     for (int i = 0; i < 5; ++i) {
         tasks[i] = "";
         task_positions[i][0] = 0;
         task_positions[i][1] = 0;
     }
+}
+
+// --- Linked List Connection Implementations ---
+
+// Sets the next drone in the linked list
+void Drone::setNextDrone(Drone* next) {
+    nextDrone = next;
+}
+
+// Returns the next drone in the linked list
+Drone* Drone::getNextDrone() const {
+    return nextDrone;
 }
 
 // --- Getter Implementations ---
