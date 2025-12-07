@@ -579,7 +579,7 @@ int main() {
             cin >> mgrOp;
 
             if (mgrOp == 1) {
-                // Create a new drone, add to depot, then add to manager
+                // Create a new drone, add to depot (so it persists), then register depot copy in manager
                 Drone newDrone;
                 string name;
                 int id, x, y;
@@ -593,12 +593,10 @@ int main() {
                 newDrone.setID(id);
                 newDrone.setInitPosition(0, x);
                 newDrone.setInitPosition(1, y);
-                // Add to depot first (so it persists)
-                depot.addDrone(newDrone);
-                cout << "Drone added to depot. Total drones: " << depot.getNumDrones() << endl;
-                // Add the depot's copy to manager
+                depot.addDrone(newDrone); // persist
                 manager.addObject(&depot.getDrone(depot.getNumDrones() - 1));
-                cout << "Drone also added to manager. Manager size: " << manager.getSize() << endl;
+                cout << "Drone added to depot and manager. Manager size: " << manager.getSize() << endl;
+                manager.printAllDroneNames();
             } else if (mgrOp == 2) {
                 manager.sortDronesByName();
                 cout << "Manager sorted by name:" << endl;
@@ -659,6 +657,17 @@ int main() {
             } else if (mgrOp == 10) {
                 cout << "Manager size: " << manager.getSize() << " drones" << endl;
             }
+
+            // Persist manager order/content back into depot
+            Depot rebuilt;
+            for (int i = 0; i < manager.getSize(); ++i) {
+                Drone* ptr = manager.getObject(i);
+                if (ptr) {
+                    rebuilt.addDrone(*ptr); // copy pointed drone into rebuilt depot
+                }
+            }
+            depot = rebuilt;
+            cout << "Depot reordered to match manager (size: " << depot.getNumDrones() << ")." << endl;
 
             break;
         }
