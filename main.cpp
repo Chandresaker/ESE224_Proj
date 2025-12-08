@@ -99,15 +99,17 @@ void displayMenu() {
     cout << "22. Spatial Tree build/search\n";
     cout << "23. DroneManager Access\n";
     cout << "24. AdvancedDrone polymorphism\n";
-    cout << "25. Dynamic Task Insertion\n";
+            cout << "25. Dynamic Task Insertion\n";
+            cout << "26. Dynamic Task Insertion Test (auto)\n";
     cout << "==============================\n";
     cout << "Select an option: ";
 }
 // ============================================
 // DIAGNOSTIC TEST SUITE  |  Author: Kaicheng
 // ============================================
-void runDiagnostics() {
-    cout << "\n=== STARTING DIAGNOSTICS & EDGE CASE CHECKS ===\n";
+void runDiagnostics();
+
+void runDynamicInsertionTest() {
 
     // Create temporary objects just for testing so we don't mess up the main depot
     Depot testDepot;
@@ -163,6 +165,78 @@ void runDiagnostics() {
     else cout << "FAIL: Template Search failed.\n";
 
     cout << "=== DIAGNOSTICS COMPLETE ===\n\n";
+}
+
+// Automated dynamic insertion test: demonstrates one insertion and one replacement
+// without user input. Uses a local Depot so main program state is unchanged.
+void runDynamicInsertionTest2() {
+    cout << "\n=== Dynamic Insertion Test (auto) ===\n";
+
+    Depot testDepot;
+
+    // Build two simple drones with linear tasks for deterministic distances
+    Drone d1;
+    d1.setName("Alpha");
+    d1.setID(1);
+    d1.setInitPosition(0, 0);
+    d1.setInitPosition(1, 0);
+    for (int i = 0; i < 5; ++i) {
+        d1.setTask(i, "A" + to_string(i));
+        d1.setTaskPosition(i, 0, (i + 1) * 10);
+        d1.setTaskPosition(i, 1, 0);
+    }
+
+    Drone d2;
+    d2.setName("Bravo");
+    d2.setID(2);
+    d2.setInitPosition(0, 0);
+    d2.setInitPosition(1, 0);
+    for (int i = 0; i < 5; ++i) {
+        d2.setTask(i, "B" + to_string(i));
+        d2.setTaskPosition(i, 0, (i + 1) * 8);
+        d2.setTaskPosition(i, 1, 2);
+    }
+
+    testDepot.addDrone(d1);
+    testDepot.addDrone(d2);
+    testDepot.initializeDynamicInsertion();
+
+    // Compute initial fleet optimal total distance
+    double totalFleetDistance = 0.0;
+    for (int i = 0; i < testDepot.getNumDrones(); ++i) {
+        ostringstream oss;
+        testDepot.computeOptimalRoute(i, oss);
+
+        string line;
+        double dist = 0.0;
+        istringstream iss(oss.str());
+        while (getline(iss, line)) {
+            const string tag = "Total distance (optimal): ";
+            size_t pos = line.find(tag);
+            if (pos != string::npos) {
+                dist = stod(line.substr(pos + tag.size()));
+                break;
+            }
+        }
+        totalFleetDistance += dist;
+    }
+
+    cout << "Initial fleet optimal total distance: " << totalFleetDistance << "\n";
+
+    double threshold = 0.0; // any improvement triggers replacement
+
+    // First dynamic task: far away, will be a costly insertion
+    testDepot.processDynamicTask("UrgentFar", 80, 80, threshold, totalFleetDistance);
+
+    // Second dynamic task: much closer, should trigger a replacement on the same drone
+    testDepot.processDynamicTask("CloserBetter", 5, 0, threshold, totalFleetDistance);
+
+    // Third dynamic task: modest cost, may go to the other drone for insertion
+    testDepot.processDynamicTask("MidRange", 25, 5, threshold, totalFleetDistance);
+
+    cout << "Final fleet distance after auto dynamic insertions: "
+         << totalFleetDistance << "\n";
+    cout << "=== End Dynamic Insertion Test ===\n\n";
 }
 // ==========================================
 // END DIAGNOSTIC TEST SUITE
