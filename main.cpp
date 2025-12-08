@@ -99,8 +99,7 @@ void displayMenu() {
     cout << "22. Spatial Tree build/search\n";
     cout << "23. DroneManager Access\n";
     cout << "24. AdvancedDrone polymorphism\n";
-            cout << "25. Dynamic Task Insertion\n";
-            cout << "26. Dynamic Task Insertion Test (auto)\n";
+    cout << "25. Dynamic Task Insertion\n";
     cout << "==============================\n";
     cout << "Select an option: ";
 }
