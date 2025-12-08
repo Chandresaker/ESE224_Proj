@@ -72,7 +72,7 @@ void loadDronesFromFile(Depot& depot, const string& filename) {
     infile.close();
 }
 
-// Prints the interactive menu of available actions (options 1–18).
+// Prints the interactive menu of available actions (options 1–25).
 void displayMenu() {
     cout << "\n===== DRONE CONTROL MENU =====\n";
     cout << "1. Sort Drones By Name\n";
@@ -599,6 +599,31 @@ int main() {
                 tree.insert(&depot.getDrone(i));
             }
             cout << "Inserted " << depot.getNumDrones() << " drones into spatial tree." << endl;
+
+            // Allow adding new drones by coordinate (ordered by x then y via tree comparator)
+            char addChoice;
+            cout << "Add a NEW drone by coordinates into the spatial tree? (y/n): ";
+            cin >> addChoice;
+            while (addChoice == 'y' || addChoice == 'Y') {
+                Drone newDrone;
+                string name;
+                int id, x, y;
+                cout << "Enter drone name: ";
+                cin >> name;
+                cout << "Enter drone ID: ";
+                cin >> id;
+                cout << "Enter initial position (x y): ";
+                cin >> x >> y;
+                newDrone.setName(name);
+                newDrone.setID(id);
+                newDrone.setInitPosition(0, x);
+                newDrone.setInitPosition(1, y);
+                depot.addDrone(newDrone); // persist in depot for lifetime stability
+                tree.insert(&depot.getDrone(depot.getNumDrones() - 1));
+                cout << "Inserted new drone into depot and spatial tree at (" << x << "," << y << ")" << endl;
+                cout << "Add another? (y/n): ";
+                cin >> addChoice;
+            }
 
             cout << "\n--- In-Order Traversal ---" << endl;
             tree.traverseInOrder();
